@@ -179,6 +179,28 @@ Limits from DN022
 
 Measure to tune: DN022 says the best AGC settings change with data rate and bandwidth. It also says some combinations are unstable above the sensitivity limit. Check PER every 2 dB across the whole input range, not just at the sensitivity limit.
 
+Update 1.02 Changes:
+
+What Changed:
+
+325 kHz boundary: DN022 says “≤ 325 kHz” uses FIFOTHR 0x47, TEST2 0x81 and TEST1 0x35. My earlier code used “< 325”, so exactly 325 kHz got the wrong values. It’s fixed and covered by a test.
+
+OOK AGC: setModulation(MOD_ASK_OOK) now writes AGCCTRL2 = 0x04, AGCCTRL1 = 0x00, AGCCTRL0 = 0x92. That’s the best case in DN022’s Figure 2, measured at 3.8 kBd and 100 kHz.
+
+AGCCTRL2: it’s now written as a whole byte, so the FSK MAX_DVGA_GAIN bits don’t carry over. setOokAgc() takes 0–7 (default 4) and agcCtrl0 defaults to 0x92.
+
+FREND1 in OOK: it’s 0xB6 above about 101 kHz and 0x56 at or below. It follows setRxBandwidth() while you’re in OOK, and the FSK value comes back when you leave OOK.
+
+
+Limits from DN022
+
+
+Measure to tune: DN022 says the best AGC settings change with data rate and bandwidth. It also says some combinations are unstable above the sensitivity limit. Check PER every 2 dB across the whole input range, not just at the sensitivity limit.
+
+Decision boundary: AGCCTRL0 = 0x91 sets an 8 dB boundary and 0x92 sets 12 dB. At 8 dB the “low” bit must be at least 16 dB below the “high” bit.
+
+FSCTRL1 not set: DN022 says the IF frequency should follow the RX bandwidth, using the SmartRF preset at or above yours (58/100/232/325/540/812 kHz). The note only shows 0x08 for the 232 kHz preset, so I didn’t invent a table. Read the value off SmartRF Studio for your bandwidth and set it with writeReg(FSCTRL1, …).
+
 Decision boundary: AGCCTRL0 = 0x91 sets an 8 dB boundary and 0x92 sets 12 dB. At 8 dB the “low” bit must be at least 16 dB below the “high” bit.
 
 FSCTRL1 not set: DN022 says the IF frequency should follow the RX bandwidth, using the SmartRF preset at or above yours (58/100/232/325/540/812 kHz). The note only shows 0x08 for the 232 kHz preset, so I didn’t invent a table. Read the value off SmartRF Studio for your bandwidth and set it with writeReg(FSCTRL1, …).
