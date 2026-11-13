@@ -205,4 +205,20 @@ Decision boundary: AGCCTRL0 = 0x91 sets an 8 dB boundary and 0x92 sets 12 dB. At
 
 FSCTRL1 not set: DN022 says the IF frequency should follow the RX bandwidth, using the SmartRF preset at or above yours (58/100/232/325/540/812 kHz). The note only shows 0x08 for the 232 kHz preset, so I didn’t invent a table. Read the value off SmartRF Studio for your bandwidth and set it with writeReg(FSCTRL1, …).
 
-*Happy Hacking!** 🚀
+v1.03
+
+Class structure: BusLock and the unlocked primitives are in the private section, as in your sketch. I added rmwRegUnlocked() as suggested. csLow() now contains the chip-ready wait that used to be in select(), and select()/deselect() are gone.
+Public methods: they are thin wrappers (BusLock plus the unlocked version), so the public API is unchanged.
+Multi-step sequences under one lock:
+reset() holds the lock across the whole manual-reset sequence.
+wake() holds it across the CS wake-up and the register and PATABLE restore.
+sleep() holds it across the saves and the power-down strobe.
+applyPa() holds it across the FREND0 write and the PATABLE burst.
+startReceive() holds it across SFRX and SRX.
+sendPacket() holds it across the flush, the optional PKTLEN change, the FIFO load, the CRC check and STX, so no other task’s traffic gets between the FIFO load and STX.
+readPacket() holds it across the payload and status-byte reads.
+Polling waits: these don’t hold the lock. waitMarc(), the TX wait loop and the 1 ms delay after reset take the lock per read, so other radios on the same bus aren’t starved.
+
+
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
