@@ -126,9 +126,9 @@ class CC1101Radio {
   CC1101Radio(const CC1101Radio&) = delete;
   CC1101Radio& operator=(const CC1101Radio&) = delete;
 
-  // Call spi_bus_initialize() first. Adds the device to the bus, resets the chip, loads sane defaults and applies the
-  // settings below. Returns ERR_NONE on success, ERR_BAD_ARG if the modulation / bitrate /
-  // deviation / bandwidth combination is outside what the datasheet allows.
+  // Call SPI.begin(...) in setup() before this method. begin() configures CS, resets the
+  // CC1101, loads defaults, and applies the requested RF settings. Returns ERR_NONE on success
+  // or ERR_BAD_ARG when the requested combination is unsupported.
   int16_t begin(float freqMHz = 433.92f, float bitrateKbps = 4.8f, float devKHz = 47.6f,
                 float rxBwKHz = 135.0f, Modulation mod = MOD_GFSK);
   void reset();
